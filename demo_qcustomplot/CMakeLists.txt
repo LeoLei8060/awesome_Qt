@@ -16,11 +16,13 @@ set(SOURCES
     main.cpp
     qcustomplot.cpp
     widget.cpp
+    labeledbar.cpp
 )
 
 set(HEADERS
     qcustomplot.h
     widget.h
+    labeledbar.h
 )
 
 set(UI_FILES

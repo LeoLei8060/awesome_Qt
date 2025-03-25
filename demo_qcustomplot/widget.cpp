@@ -1,6 +1,7 @@
 #include "widget.h"
 #include "qcustomplot.h"
 #include "ui_widget.h"
+#include "labeledbar.h"
 
 #include <random>
 
@@ -139,9 +140,9 @@ void Widget::setupTab2()
     ui->tab2->yAxis->setLabel("数值");
 
     // 创建三个柱状图对象
-    QCPBars *t1Bars = new QCPBars(ui->tab2->xAxis, ui->tab2->yAxis);
-    QCPBars *t2Bars = new QCPBars(ui->tab2->xAxis, ui->tab2->yAxis);
-    QCPBars *t3Bars = new QCPBars(ui->tab2->xAxis, ui->tab2->yAxis);
+    LabeledBars *t1Bars = new LabeledBars(ui->tab2->xAxis, ui->tab2->yAxis);
+    LabeledBars *t2Bars = new LabeledBars(ui->tab2->xAxis, ui->tab2->yAxis);
+    LabeledBars *t3Bars = new LabeledBars(ui->tab2->xAxis, ui->tab2->yAxis);
 
     // 保存柱状图对象的指针，以便后续访问
     m_bars.append(t1Bars);
@@ -160,6 +161,13 @@ void Widget::setupTab2()
     t3Bars->setName("T3");
     t3Bars->setPen(QPen(QColor(100, 100, 200).lighter(130)));
     t3Bars->setBrush(QColor(100, 100, 200));
+
+    // 配置标签
+    for (int i = 0; i < m_bars.size(); ++i) {
+        m_bars[i]->setLabelFont(QFont("Arial", 8));
+        m_bars[i]->setLabelColor(Qt::black);
+        m_bars[i]->setLabelFormat('f', 1);
+    }
 
     // 默认为分组模式，设置柱子的宽度和偏移
     double width = 0.3; // 1/组数
@@ -197,39 +205,14 @@ void Widget::setupTab2()
     ui->tab2->setInteraction(QCP::iRangeZoom, true);
 
     // 连接显示数值按钮的信号
-    connect(ui->btn_tab2_showVal, &QPushButton::clicked, this, [this, ticks]() {
+    connect(ui->btn_tab2_showVal, &QPushButton::clicked, this, [this]() {
         // 获取当前按钮状态
         bool isChecked = ui->btn_tab2_showVal->isChecked();
 
         // 更新所有柱状图是否显示数值
         for (int i = 0; i < m_bars.size(); ++i) {
-            QCPBars *bar = m_bars[i];
-            if (isChecked) {
-                // 使用itemCount和value自己添加文本标签
-                QVector<double> values;
-                if (i == 0)
-                    values = m_t1Data;
-                else if (i == 1)
-                    values = m_t2Data;
-                else if (i == 2)
-                    values = m_t3Data;
-
-                for (int j = 0; j < ticks.size(); ++j) {
-                    // 创建文本标签显示数值
-                    QCPItemText *textLabel = new QCPItemText(ui->tab2);
-                    textLabel->position->setType(QCPItemPosition::ptPlotCoords);
-                    textLabel->position->setCoords(ticks[j], values[j] + 0.3); // 在柱子上方显示
-                    textLabel->setText(QString::number(values[j], 'f', 1));
-                    textLabel->setFont(QFont("Arial", 8));
-                    textLabel->setColor(Qt::black);
-                }
-            } else {
-                // 移除所有文本标签
-                QList<QCPAbstractItem *> items = ui->tab2->selectedItems();
-                for (QCPAbstractItem *item : items) {
-                    ui->tab2->removeItem(item);
-                }
-            }
+            // 设置是否显示标签
+            m_bars[i]->setShowLabels(isChecked);
         }
 
         // 更新图表
@@ -245,11 +228,6 @@ void Widget::setupTab2()
             // 堆叠模式
             ui->btn_tab2_mode->setText("堆叠模式");
 
-            // 设置柱状图为堆叠模式
-            // for (int i = 0; i < m_bars.size(); ++i) {
-            //     m_bars[i]->setWidth(0.75);
-            // }
-
             // 设置堆叠顺序
             m_bars[1]->moveAbove(m_bars[0]);
             m_bars[2]->moveAbove(m_bars[1]);
@@ -263,11 +241,6 @@ void Widget::setupTab2()
         } else {
             // 分组模式
             ui->btn_tab2_mode->setText("分组模式");
-
-            // 设置柱状图为分组模式
-            // for (int i = 0; i < m_bars.size(); ++i) {
-            //     m_bars[i]->setWidth(width);
-            // }
 
             // 设置分组位置
             m_bars[0]->moveBelow(nullptr); // 清除堆叠关系

@@ -129,7 +129,7 @@ void Widget::setupTab2()
     ui->tab2->xAxis->setLabelColor(Qt::black);
 
     // 设置Y轴
-    ui->tab2->yAxis->setRange(0, 12);
+    ui->tab2->yAxis->setRange(0, 30);
     ui->tab2->yAxis->setBasePen(QPen(Qt::black));
     ui->tab2->yAxis->setTickPen(QPen(Qt::black));
     ui->tab2->yAxis->setSubTickPen(QPen(Qt::black));
@@ -162,7 +162,7 @@ void Widget::setupTab2()
     t3Bars->setBrush(QColor(100, 100, 200));
 
     // 默认为分组模式，设置柱子的宽度和偏移
-    double width = 0.25;
+    double width = 0.3; // 1/组数
     t1Bars->setWidth(width);
     t2Bars->setWidth(width);
     t3Bars->setWidth(width);
@@ -241,14 +241,14 @@ void Widget::setupTab2()
         // 获取当前按钮状态
         bool isStacked = ui->btn_tab2_mode->isChecked();
 
-        if (isStacked) {
+        if (!isStacked) {
             // 堆叠模式
             ui->btn_tab2_mode->setText("堆叠模式");
 
             // 设置柱状图为堆叠模式
-            for (int i = 0; i < m_bars.size(); ++i) {
-                m_bars[i]->setWidth(0.75);
-            }
+            // for (int i = 0; i < m_bars.size(); ++i) {
+            //     m_bars[i]->setWidth(0.75);
+            // }
 
             // 设置堆叠顺序
             m_bars[1]->moveAbove(m_bars[0]);
@@ -265,9 +265,9 @@ void Widget::setupTab2()
             ui->btn_tab2_mode->setText("分组模式");
 
             // 设置柱状图为分组模式
-            for (int i = 0; i < m_bars.size(); ++i) {
-                m_bars[i]->setWidth(width);
-            }
+            // for (int i = 0; i < m_bars.size(); ++i) {
+            //     m_bars[i]->setWidth(width);
+            // }
 
             // 设置分组位置
             m_bars[0]->moveBelow(nullptr); // 清除堆叠关系

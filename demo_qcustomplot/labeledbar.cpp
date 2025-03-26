@@ -69,8 +69,42 @@ void LabeledBars::draw(QCPPainter *painter)
         // 计算柱子的位置和宽度
         double width = mWidth;
         double keyPixel = mKeyAxis->coordToPixel(key);
-        double valuePixel = mValueAxis->coordToPixel(value);
-        double baseValuePixel = mValueAxis->coordToPixel(qMin(mBaseValue, (double)0));
+        
+        double valueTop, valueBottom;
+        // 判断是否处于堆叠模式 - 通过检查是否有bars堆叠在当前bars之上或之下
+        bool isStacked = (barBelow() != nullptr || barAbove() != nullptr);
+        if (isStacked)
+        {
+            if (value >= 0)
+            {
+                // 获取堆叠基础值（底部）
+                double baseValue = getStackedBaseValue(key, true);
+                // 计算当前柱子的底部位置
+                valueBottom = baseValue;
+                // 计算当前柱子的顶部位置
+                valueTop = baseValue + value;
+            }
+            else
+            {
+                // 获取堆叠基础值（顶部，因为是负值）
+                double baseValue = getStackedBaseValue(key, false);
+                // 计算当前柱子的顶部位置
+                valueTop = baseValue;
+                // 计算当前柱子的底部位置
+                valueBottom = baseValue + value;
+            }
+        }
+        else
+        {
+            // 非堆叠模式，底部是基础值，顶部是数值
+            valueBottom = mBaseValue;
+            valueTop = value;
+        }
+        
+        // 计算柱子中心位置的Y坐标（垂直位置）
+        double valueMid = (valueTop + valueBottom) / 2.0;
+        // 将数据坐标转换为屏幕坐标
+        double valuePixelMid = mValueAxis->coordToPixel(valueMid);
         
         // 文本内容 - 根据格式和精度进行格式化
         QString text = QString::number(value, m_labelFormat, m_labelPrecision);
@@ -79,15 +113,9 @@ void LabeledBars::draw(QCPPainter *painter)
         QFontMetrics fontMetrics(m_labelFont);
         QSize textSize = fontMetrics.size(Qt::TextSingleLine, text);
         
-        // 计算文本的位置 - 在柱子顶部居中显示
+        // 计算文本的位置 - 在柱子区域的中间显示
         double textX = keyPixel - textSize.width() / 2.0;
-        double textY;
-        
-        // 根据柱子方向确定文本位置
-        if (value >= 0)
-            textY = valuePixel - textSize.height() - 2; // 正值，在柱子上方显示
-        else
-            textY = valuePixel + 2; // 负值，在柱子下方显示
+        double textY = valuePixelMid - textSize.height() / 2.0;
         
         // 绘制文本
         painter->drawText(textX, textY, textSize.width(), textSize.height(), Qt::AlignCenter, text);

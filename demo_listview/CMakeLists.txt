@@ -13,16 +13,30 @@ find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
 
 # 源文件
 set(SOURCES
+    main.cpp
+    mainwindow.cpp
+    listitem.cpp
+    listmodel.cpp
+    listitemdelegate.cpp
 )
 
 set(HEADERS
+    mainwindow.h
+    listitem.h
+    listmodel.h
+    listitemdelegate.h
 )
 
 set(UI_FILES
+    mainwindow.ui
+)
+
+set(RESOURCES
+    resources.qrc
 )
 
 # 创建可执行文件
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${UI_FILES})
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${UI_FILES} ${RESOURCES})
 
 # 链接Qt库
 target_link_libraries(${PROJECT_NAME} PRIVATE

@@ -19,7 +19,7 @@ add_subdirectory(utils)
 
 # 添加各个子项目
 add_subdirectory(demo_qcustomplot)
-# add_subdirectory(demo_listview)
+add_subdirectory(demo_listview)
 # add_subdirectory(demo_tableview)
 # add_subdirectory(demo_propertybrowser)
 # add_subdirectory(demo_dockwidget)

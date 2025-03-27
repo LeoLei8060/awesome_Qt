@@ -9,10 +9,10 @@ TableFilterProxyModel::TableFilterProxyModel(QObject *parent)
     , m_priceFilterEnabled(false)
     , m_availabilityFilterEnabled(false)
     , m_minPrice(0)
-    , m_maxPrice(9999.99)
+    , m_maxPrice(10000)
     , m_availabilityState(-1)
     , m_storedMinPrice(0)
-    , m_storedMaxPrice(9999.99)
+    , m_storedMaxPrice(10000)
     , m_storedAvailabilityState(-1)
 {
     // 设置初始日期
@@ -22,7 +22,6 @@ TableFilterProxyModel::TableFilterProxyModel(QObject *parent)
     m_storedDateTo = m_dateTo;
 }
 
-// 存储筛选条件（不应用）
 void TableFilterProxyModel::storeNameFilter(const QString &name)
 {
     m_storedNameFilter = name;
@@ -58,7 +57,6 @@ void TableFilterProxyModel::storeAvailabilityFilter(int state)
     m_storedAvailabilityState = state;
 }
 
-// 应用存储的筛选条件
 void TableFilterProxyModel::applyFilters()
 {
     // 应用名称筛选
@@ -81,7 +79,7 @@ void TableFilterProxyModel::applyFilters()
     // 应用价格范围筛选
     m_minPrice = m_storedMinPrice;
     m_maxPrice = m_storedMaxPrice;
-    m_priceFilterEnabled = (m_minPrice > 0 || m_maxPrice < 9999.99);
+    m_priceFilterEnabled = (m_minPrice > 0 || m_maxPrice < 10000);
 
     // 应用可用性筛选
     m_availabilityState = m_storedAvailabilityState;
@@ -91,7 +89,6 @@ void TableFilterProxyModel::applyFilters()
     invalidateFilter();
 }
 
-// 立即应用的筛选方法（保留供兼容）
 void TableFilterProxyModel::setNameFilter(const QString &name)
 {
     storeNameFilter(name);
@@ -131,7 +128,7 @@ void TableFilterProxyModel::setPriceRangeFilter(double minPrice, double maxPrice
 
     m_minPrice = minPrice;
     m_maxPrice = maxPrice;
-    m_priceFilterEnabled = (minPrice > 0 || maxPrice < 9999.99);
+    m_priceFilterEnabled = (minPrice > 0 || maxPrice < 10000);
     invalidateFilter();
 }
 
@@ -152,7 +149,7 @@ void TableFilterProxyModel::resetFilters()
     m_storedDateFrom = QDate::currentDate().addMonths(-1);
     m_storedDateTo = QDate::currentDate();
     m_storedMinPrice = 0;
-    m_storedMaxPrice = 10000.00; // 修改m_storedMaxPrice的赋值
+    m_storedMaxPrice = 10000.00;
     m_storedAvailabilityState = -1;
 
     // 重置应用的筛选条件
@@ -167,7 +164,7 @@ void TableFilterProxyModel::resetFilters()
     m_dateFrom = QDate::currentDate().addMonths(-1);
     m_dateTo = QDate::currentDate();
     m_minPrice = 0;
-    m_maxPrice = 10000.00; // 修改m_maxPrice的赋值
+    m_maxPrice = 10000.00;
     m_availabilityState = -1;
 
     invalidateFilter();
@@ -190,13 +187,10 @@ bool TableFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &s
     QString name = sourceModel()->data(nameIndex).toString();
     QString category = sourceModel()->data(categoryIndex).toString();
 
-    // 修复日期获取，直接获取QDate对象
     QDate date = sourceModel()->data(dateIndex, Qt::EditRole).toDate();
 
-    // 使用EditRole获取实际的双精度数值，避免获取到格式化后的字符串
     double price = sourceModel()->data(priceIndex, Qt::EditRole).toDouble();
 
-    // 获取布尔值，使用EditRole获取实际的布尔值而不是显示文本
     bool available = sourceModel()->data(availableIndex, Qt::EditRole).toBool();
 
     // 应用名称筛选

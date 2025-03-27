@@ -1,14 +1,18 @@
 #include "listitem.h"
 
 ListItem::ListItem()
-    : m_name(""), m_date(QDateTime::currentDateTime()), m_size(0), m_iconPath("")
-{
-}
+    : m_name("")
+    , m_date(QDateTime::currentDateTime())
+    , m_size(0)
+    , m_iconPath("")
+{}
 
 ListItem::ListItem(const QString &name, const QDateTime &date, int size, const QString &iconPath)
-    : m_name(name), m_date(date), m_size(size), m_iconPath(iconPath)
-{
-}
+    : m_name(name)
+    , m_date(date)
+    , m_size(size)
+    , m_iconPath(iconPath)
+{}
 
 QString ListItem::getName() const
 {

@@ -42,10 +42,10 @@ void ListItemDelegate::paint(QPainter                   *painter,
 
     if (isIconMode) {
         // 图标模式下的绘制
-        
+
         // 获取整个项目矩形区域
         QRect itemRect = opt.rect;
-        
+
         // 绘制选中状态或悬停状态的背景
         if (opt.state & QStyle::State_Selected) {
             // 选中状态
@@ -55,30 +55,29 @@ void ListItemDelegate::paint(QPainter                   *painter,
             // 悬停状态
             painter->fillRect(itemRect, opt.palette.highlight().color().lighter(160));
         }
-        
+
         // 计算图标的大小和位置（占整个区域的上部分，约60%的高度）
         const int iconHeight = itemRect.height() * 0.6;
         const int iconWidth = iconHeight; // 保持正方形
-        
+
         // 确保图标不会过大
         const int maxIconSize = 64;
         const int iconSize = qMin(iconWidth, maxIconSize);
-        
+
         // 计算图标位置（水平居中）
-        QRect iconRect = QRect(
-            itemRect.left() + (itemRect.width() - iconSize) / 2,
-            itemRect.top() + itemRect.height() * 0.05, // 顶部留5%的空间
-            iconSize,
-            iconSize
-        );
-        
+        QRect iconRect = QRect(itemRect.left() + (itemRect.width() - iconSize) / 2,
+                               itemRect.top() + itemRect.height() * 0.05, // 顶部留5%的空间
+                               iconSize,
+                               iconSize);
+
         // 计算文本区域（占整个区域的下部分，约35%的高度）
         // 文本区域从图标底部开始，到项目底部结束，保留5%的底部空间
-        QRect textRect = QRect(
-            itemRect.left() + itemRect.width() * 0.05,  // 左边留5%空间
-            iconRect.bottom() + itemRect.height() * 0.05, // 图标和文本之间留5%的空间
-            itemRect.width() * 0.9,  // 宽度为90%
-            itemRect.height() - iconRect.height() - itemRect.height() * 0.15 // 减去图标和顶部、中间间隔、底部空间
+        QRect textRect = QRect(itemRect.left() + itemRect.width() * 0.05, // 左边留5%空间
+                               iconRect.bottom()
+                                   + itemRect.height() * 0.05, // 图标和文本之间留5%的空间
+                               itemRect.width() * 0.9,         // 宽度为90%
+                               itemRect.height() - iconRect.height()
+                                   - itemRect.height() * 0.15 // 减去图标和顶部、中间间隔、底部空间
         );
 
         // 绘制图标
@@ -95,35 +94,21 @@ void ListItemDelegate::paint(QPainter                   *painter,
 
         // 计算文本区域的三等分（名称、日期、大小）
         const int textPartHeight = textRect.height() / 3;
-        
+
         // 名称区域（第一部分）
-        QRect nameRect = QRect(
-            textRect.left(),
-            textRect.top(),
-            textRect.width(),
-            textPartHeight
-        );
-        
+        QRect nameRect = QRect(textRect.left(), textRect.top(), textRect.width(), textPartHeight);
+
         // 日期区域（第二部分）
-        QRect dateRect = QRect(
-            textRect.left(),
-            nameRect.bottom(),
-            textRect.width(),
-            textPartHeight
-        );
-        
+        QRect dateRect = QRect(textRect.left(), nameRect.bottom(), textRect.width(), textPartHeight);
+
         // 大小区域（第三部分）
-        QRect sizeRect = QRect(
-            textRect.left(),
-            dateRect.bottom(),
-            textRect.width(),
-            textPartHeight
-        );
+        QRect sizeRect = QRect(textRect.left(), dateRect.bottom(), textRect.width(), textPartHeight);
 
         // 绘制名称（居中，带省略号）
         painter->setFont(nameFont);
-        QString elidedName = painter->fontMetrics().elidedText(
-            name, Qt::ElideMiddle, nameRect.width());
+        QString elidedName = painter->fontMetrics().elidedText(name,
+                                                               Qt::ElideMiddle,
+                                                               nameRect.width());
         painter->drawText(nameRect, Qt::AlignHCenter | Qt::AlignVCenter, elidedName);
 
         // 绘制详细信息（居中，分两行，带省略号）
@@ -135,12 +120,14 @@ void ListItemDelegate::paint(QPainter                   *painter,
         // 日期和大小信息
         QString dateStr = date.toString("yyyy-MM-dd");
         QString sizeStr = QString("%1 KB").arg(size);
-        
+
         // 使用elidedText确保文本不会超出范围
-        QString elidedDateStr = painter->fontMetrics().elidedText(
-            dateStr, Qt::ElideRight, dateRect.width());
-        QString elidedSizeStr = painter->fontMetrics().elidedText(
-            sizeStr, Qt::ElideRight, sizeRect.width());
+        QString elidedDateStr = painter->fontMetrics().elidedText(dateStr,
+                                                                  Qt::ElideRight,
+                                                                  dateRect.width());
+        QString elidedSizeStr = painter->fontMetrics().elidedText(sizeStr,
+                                                                  Qt::ElideRight,
+                                                                  sizeRect.width());
 
         painter->drawText(dateRect, Qt::AlignHCenter | Qt::AlignVCenter, elidedDateStr);
         painter->drawText(sizeRect, Qt::AlignHCenter | Qt::AlignVCenter, elidedSizeStr);
@@ -220,7 +207,7 @@ QWidget *ListItemDelegate::createEditor(QWidget                    *parent,
 {
     Q_UNUSED(option);
     Q_UNUSED(index);
-    
+
     // 根据需求，双击编辑只处理name属性，所以直接返回QLineEdit
     return new QLineEdit(parent);
 }

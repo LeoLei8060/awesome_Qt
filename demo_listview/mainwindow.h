@@ -1,12 +1,14 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include "listmodel.h"
 #include "listitemdelegate.h"
+#include "listmodel.h"
+#include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
+namespace Ui {
+class MainWindow;
+}
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
@@ -30,10 +32,10 @@ private slots:
     void on_listView_doubleClicked(const QModelIndex &index);
 
 private:
-    Ui::MainWindow *ui;
-    ListModel *m_model;
+    Ui::MainWindow           *ui;
+    ListModel                *m_model;
     ListSortFilterProxyModel *m_proxyModel;
-    ListItemDelegate *m_delegate;
+    ListItemDelegate         *m_delegate;
 
     void setupModel();
     void setupView();

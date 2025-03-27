@@ -1,7 +1,7 @@
 #include "widget.h"
+#include "labeledbar.h"
 #include "qcustomplot.h"
 #include "ui_widget.h"
-#include "labeledbar.h"
 
 #include <random>
 

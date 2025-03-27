@@ -28,12 +28,12 @@ private:
 private:
     Ui::Widget *ui;
 
-    QVector<QCPGraph *> m_graphs;
-    QVector<LabeledBars *>  m_bars;
-    QVector<double>     m_t1Data;
-    QVector<double>     m_t2Data;
-    QVector<double>     m_t3Data;
-    QStringList         m_tips;
+    QVector<QCPGraph *>    m_graphs;
+    QVector<LabeledBars *> m_bars;
+    QVector<double>        m_t1Data;
+    QVector<double>        m_t2Data;
+    QVector<double>        m_t3Data;
+    QStringList            m_tips;
 };
 
 #endif // WIDGET_H

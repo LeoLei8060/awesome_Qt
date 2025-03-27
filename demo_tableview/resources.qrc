@@ -4,5 +4,6 @@
         <file>res/icons/delete.png</file>
         <file>res/icons/save.png</file>
         <file>res/icons/open.png</file>
+        <file>res/icons/filter.png</file>
     </qresource>
 </RCC>

@@ -2,16 +2,17 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QSortFilterProxyModel>
+#include <QStandardItemModel>
+#include <QTableView>
+#include <QPushButton>
 #include <QLineEdit>
 #include <QComboBox>
 #include <QDateEdit>
-#include <QLabel>
 #include <QDoubleSpinBox>
-#include <QModelIndex>
-#include <QTableView>
-#include <QPushButton>
+#include <QFileDialog>
+#include <QMessageBox>
 #include "tablemodel.h"
+#include "tablefilterproxymodel.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -45,8 +46,11 @@ private slots:
     void onFilterTextChanged(const QString &text);
     void onCategoryFilterChanged(const QString &category);
     void onDateFilterChanged(const QDate &date);
-    void onPriceFilterChanged(double value);
+    void onDateEndFilterChanged(const QDate &date);
+    void onMinPriceFilterChanged(double value);
+    void onMaxPriceFilterChanged(double value);
     void onAvailableFilterChanged(int state);
+    void onApplyFilterClicked(); // 新增筛选按钮处理函数
     
     // 表格项双击
     void onTableItemDoubleClicked(const QModelIndex &index);
@@ -63,8 +67,8 @@ private:
     // 表格模型
     TableModel *m_tableModel;
     
-    // 排序筛选代理模型
-    QSortFilterProxyModel *m_proxyModel;
+    // 表格筛选代理模型
+    TableFilterProxyModel *m_proxyModel;
     
     // 表格视图
     QTableView *m_tableView;
@@ -75,12 +79,15 @@ private:
     QPushButton *m_saveButton;
     QPushButton *m_loadButton;
     QPushButton *m_resetFilterButton;
+    QPushButton *m_applyFilterButton; // 新增筛选按钮
     
     // 筛选组件
     QLineEdit *m_nameFilterEdit;
     QComboBox *m_categoryFilterCombo;
     QDateEdit *m_dateFilterEdit;
-    QDoubleSpinBox *m_priceFilterSpin;
+    QDateEdit *m_dateEndFilterEdit;  // 添加日期范围终点
+    QDoubleSpinBox *m_minPriceFilterSpin;  // 改为最小价格
+    QDoubleSpinBox *m_maxPriceFilterSpin;  // 添加最大价格
     QComboBox *m_availableFilterCombo;
     
     // 初始化UI

@@ -33,11 +33,9 @@ MainWindow::MainWindow(QWidget *parent)
     
     // 创建模型和代理
     m_tableModel = new TableModel(this);
-    m_proxyModel = new QSortFilterProxyModel(this);
+    m_proxyModel = new TableFilterProxyModel(this);
     m_proxyModel->setSourceModel(m_tableModel);
-    
-    // 设置代理模型为动态排序
-    m_proxyModel->setDynamicSortFilter(true);
+    m_proxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
     
     // 设置UI界面
     setupUI();
@@ -82,7 +80,7 @@ void MainWindow::setupUI()
     mainLayout->setSpacing(8);
     
     // 创建筛选器区域
-    QGroupBox *filterGroupBox = new QGroupBox(tr("筛选器"), centralWidget);
+    QGroupBox *filterGroupBox = new QGroupBox(tr("筛选条件"), centralWidget);
     QGridLayout *filterLayout = new QGridLayout(filterGroupBox);
     filterLayout->setContentsMargins(8, 8, 8, 8);
     filterLayout->setSpacing(8);
@@ -90,7 +88,8 @@ void MainWindow::setupUI()
     // 名称筛选
     QLabel *nameLabel = new QLabel(tr("名称:"), filterGroupBox);
     m_nameFilterEdit = new QLineEdit(filterGroupBox);
-    m_nameFilterEdit->setPlaceholderText(tr("输入名称关键字"));
+    m_nameFilterEdit->setClearButtonEnabled(true);
+    m_nameFilterEdit->setPlaceholderText(tr("输入关键字筛选"));
     filterLayout->addWidget(nameLabel, 0, 0);
     filterLayout->addWidget(m_nameFilterEdit, 0, 1);
     
@@ -102,21 +101,42 @@ void MainWindow::setupUI()
     filterLayout->addWidget(m_categoryFilterCombo, 0, 3);
     
     // 日期筛选
-    QLabel *dateLabel = new QLabel(tr("日期:"), filterGroupBox);
+    QLabel *dateLabel = new QLabel(tr("日期范围:"), filterGroupBox);
     m_dateFilterEdit = new QDateEdit(filterGroupBox);
     m_dateFilterEdit->setCalendarPopup(true);
     m_dateFilterEdit->setDate(QDate::currentDate().addMonths(-1));
+    
+    m_dateEndFilterEdit = new QDateEdit(filterGroupBox);
+    m_dateEndFilterEdit->setCalendarPopup(true);
+    m_dateEndFilterEdit->setDate(QDate::currentDate());
+    
+    QHBoxLayout *dateLayout = new QHBoxLayout();
+    dateLayout->addWidget(m_dateFilterEdit);
+    dateLayout->addWidget(new QLabel(tr("至"), filterGroupBox));
+    dateLayout->addWidget(m_dateEndFilterEdit);
+    
     filterLayout->addWidget(dateLabel, 0, 4);
-    filterLayout->addWidget(m_dateFilterEdit, 0, 5);
+    filterLayout->addLayout(dateLayout, 0, 5);
     
     // 价格筛选
-    QLabel *priceLabel = new QLabel(tr("价格:"), filterGroupBox);
-    m_priceFilterSpin = new QDoubleSpinBox(filterGroupBox);
-    m_priceFilterSpin->setRange(0, 9999.99);
-    m_priceFilterSpin->setValue(0);
-    m_priceFilterSpin->setPrefix("¥ ");
+    QLabel *priceLabel = new QLabel(tr("价格范围:"), filterGroupBox);
+    m_minPriceFilterSpin = new QDoubleSpinBox(filterGroupBox);
+    m_minPriceFilterSpin->setRange(0, 9999.99);
+    m_minPriceFilterSpin->setValue(0);
+    m_minPriceFilterSpin->setPrefix("¥ ");
+    
+    m_maxPriceFilterSpin = new QDoubleSpinBox(filterGroupBox);
+    m_maxPriceFilterSpin->setRange(0, 9999.99);
+    m_maxPriceFilterSpin->setValue(9999.99);
+    m_maxPriceFilterSpin->setPrefix("¥ ");
+    
+    QHBoxLayout *priceLayout = new QHBoxLayout();
+    priceLayout->addWidget(m_minPriceFilterSpin);
+    priceLayout->addWidget(new QLabel(tr("至"), filterGroupBox));
+    priceLayout->addWidget(m_maxPriceFilterSpin);
+    
     filterLayout->addWidget(priceLabel, 1, 0);
-    filterLayout->addWidget(m_priceFilterSpin, 1, 1);
+    filterLayout->addLayout(priceLayout, 1, 1);
     
     // 可用性筛选
     QLabel *availableLabel = new QLabel(tr("可用:"), filterGroupBox);
@@ -127,9 +147,21 @@ void MainWindow::setupUI()
     filterLayout->addWidget(availableLabel, 1, 2);
     filterLayout->addWidget(m_availableFilterCombo, 1, 3);
     
-    // 重置筛选按钮
+    // 筛选操作按钮
+    QHBoxLayout *filterButtonLayout = new QHBoxLayout();
+    
+    // 添加应用筛选按钮
+    m_applyFilterButton = new QPushButton(tr("应用筛选"), filterGroupBox);
+    m_applyFilterButton->setIcon(QIcon(":/icons/filter.png"));
+    
+    // 添加重置筛选按钮
     m_resetFilterButton = new QPushButton(tr("重置筛选"), filterGroupBox);
-    filterLayout->addWidget(m_resetFilterButton, 1, 5);
+    
+    filterButtonLayout->addWidget(m_applyFilterButton);
+    filterButtonLayout->addWidget(m_resetFilterButton);
+    filterButtonLayout->addStretch();
+    
+    filterLayout->addLayout(filterButtonLayout, 1, 4, 1, 2);
     
     mainLayout->addWidget(filterGroupBox);
     
@@ -237,45 +269,51 @@ void MainWindow::updateCategoryFilter()
 
 void MainWindow::connectSignals()
 {
-    // 连接添加按钮
+    // 数据修改信号
+    connect(m_tableModel, &TableModel::dataChanged, this, &MainWindow::onTableDataChanged);
+    
+    // 表格项双击信号
+    connect(m_tableView, &QTableView::doubleClicked, this, &MainWindow::onTableItemDoubleClicked);
+    
+    // 按钮点击信号
     connect(m_addButton, &QPushButton::clicked, this, &MainWindow::onAddItemClicked);
-    
-    // 连接删除按钮
     connect(m_removeButton, &QPushButton::clicked, this, &MainWindow::onRemoveItemClicked);
-    
-    // 连接保存按钮
     connect(m_saveButton, &QPushButton::clicked, this, &MainWindow::onSaveClicked);
-    
-    // 连接加载按钮
     connect(m_loadButton, &QPushButton::clicked, this, &MainWindow::onLoadClicked);
+    connect(m_resetFilterButton, &QPushButton::clicked, this, &MainWindow::onResetFilterClicked);
+    connect(m_applyFilterButton, &QPushButton::clicked, this, &MainWindow::onApplyFilterClicked);
     
-    // 连接筛选器
-    connect(m_nameFilterEdit, &QLineEdit::textChanged, this, &MainWindow::onFilterTextChanged);
-    connect(m_categoryFilterCombo, &QComboBox::currentTextChanged, this, &MainWindow::onCategoryFilterChanged);
-    connect(m_dateFilterEdit, &QDateEdit::dateChanged, this, &MainWindow::onDateFilterChanged);
-    connect(m_priceFilterSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onPriceFilterChanged);
+    // 筛选控件信号 - 值改变时只保存到对应变量，不直接触发筛选
+    // 这些连接保留是为了在用户输入时保存筛选值，但不会立即应用筛选
+    connect(m_nameFilterEdit, &QLineEdit::textChanged, 
+            [this](const QString &text) { m_proxyModel->storeNameFilter(text); });
+    
+    connect(m_categoryFilterCombo, &QComboBox::currentTextChanged, 
+            [this](const QString &category) { m_proxyModel->storeCategoryFilter(category); });
+    
+    connect(m_dateFilterEdit, &QDateEdit::dateChanged, 
+            [this](const QDate &date) { m_proxyModel->storeDateFrom(date); });
+    
+    connect(m_dateEndFilterEdit, &QDateEdit::dateChanged, 
+            [this](const QDate &date) { m_proxyModel->storeDateTo(date); });
+    
+    connect(m_minPriceFilterSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), 
+            [this](double value) { m_proxyModel->storeMinPrice(value); });
+    
+    connect(m_maxPriceFilterSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), 
+            [this](double value) { m_proxyModel->storeMaxPrice(value); });
+    
     connect(m_availableFilterCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), 
         [this](int index) {
             QVariant data = m_availableFilterCombo->itemData(index);
-            onAvailableFilterChanged(data.toInt());
+            int state = data.isValid() ? data.toInt() : -1;
+            m_proxyModel->storeAvailabilityFilter(state);
         });
-    
-    // 连接重置筛选按钮
-    connect(m_resetFilterButton, &QPushButton::clicked, this, &MainWindow::onResetFilterClicked);
-    
-    // 连接表格项双击
-    connect(m_tableView, &QTableView::doubleClicked, this, &MainWindow::onTableItemDoubleClicked);
-    
-    // 连接表格数据改变
-    connect(m_tableModel, &QAbstractItemModel::dataChanged, this, &MainWindow::onTableDataChanged);
 }
 
 void MainWindow::createTestData()
 {
     m_tableModel->generateTestData(100);
-    
-    // 设置自定义筛选器
-    m_proxyModel->setFilterKeyColumn(TableItem::NameColumn);
     
     // 更新类别下拉框
     updateCategoryFilter();
@@ -380,61 +418,41 @@ void MainWindow::onLoadClicked()
 
 void MainWindow::onFilterTextChanged(const QString &text)
 {
-    m_proxyModel->setFilterKeyColumn(TableItem::NameColumn);
-    m_proxyModel->setFilterFixedString(text);
+    m_proxyModel->setNameFilter(text);
 }
 
 void MainWindow::onCategoryFilterChanged(const QString &category)
 {
-    if (category == tr("全部")) {
-        // 不应用类别筛选
-        m_proxyModel->setFilterKeyColumn(TableItem::NameColumn);
-        m_proxyModel->setFilterFixedString(m_nameFilterEdit->text());
-    } else {
-        // 创建自定义过滤器
-        m_proxyModel->setFilterKeyColumn(TableItem::CategoryColumn);
-        m_proxyModel->setFilterFixedString(category);
-    }
+    m_proxyModel->setCategoryFilter(category);
 }
 
 void MainWindow::onDateFilterChanged(const QDate &date)
 {
-    // 确保筛选器应用到正确的列
-    m_proxyModel->setFilterKeyColumn(TableItem::DateColumn);
-    
-    // 创建自定义筛选器
-    m_proxyModel->setFilterFixedString(date.toString(Qt::ISODate));
+    // 更新日期范围的开始日期
+    m_proxyModel->setDateRangeFilter(date, m_dateEndFilterEdit->date());
 }
 
-void MainWindow::onPriceFilterChanged(double value)
+void MainWindow::onDateEndFilterChanged(const QDate &date)
 {
-    // 设置价格筛选器
-    m_proxyModel->setFilterKeyColumn(TableItem::PriceColumn);
-    
-    if (value <= 0.01) {
-        // 不应用价格筛选
-        m_proxyModel->setFilterFixedString("");
-    } else {
-        // 筛选大于等于指定价格的项目
-        m_proxyModel->setFilterRole(Qt::EditRole);
-        
-        // 使用自定义筛选器
-        m_proxyModel->setFilterFixedString(QString::number(value, 'f', 2));
-    }
+    // 更新日期范围的结束日期
+    m_proxyModel->setDateRangeFilter(m_dateFilterEdit->date(), date);
+}
+
+void MainWindow::onMinPriceFilterChanged(double value)
+{
+    // 更新价格范围的最小值
+    m_proxyModel->setPriceRangeFilter(value, m_maxPriceFilterSpin->value());
+}
+
+void MainWindow::onMaxPriceFilterChanged(double value)
+{
+    // 更新价格范围的最大值
+    m_proxyModel->setPriceRangeFilter(m_minPriceFilterSpin->value(), value);
 }
 
 void MainWindow::onAvailableFilterChanged(int state)
 {
-    if (state == -1) {
-        // 不应用可用性筛选
-        m_proxyModel->setFilterKeyColumn(TableItem::NameColumn);
-        m_proxyModel->setFilterFixedString(m_nameFilterEdit->text());
-    } else {
-        // 应用可用性筛选
-        bool available = (state == 1);
-        m_proxyModel->setFilterKeyColumn(TableItem::AvailableColumn);
-        m_proxyModel->setFilterFixedString(available ? "true" : "false");
-    }
+    m_proxyModel->setAvailabilityFilter(state);
 }
 
 void MainWindow::onTableItemDoubleClicked(const QModelIndex &index)
@@ -456,16 +474,25 @@ void MainWindow::onTableDataChanged(const QModelIndex &topLeft, const QModelInde
 
 void MainWindow::onResetFilterClicked()
 {
-    // 重置所有筛选器
+    // 重置所有筛选器UI控件
     m_nameFilterEdit->clear();
     m_categoryFilterCombo->setCurrentIndex(0);
     m_dateFilterEdit->setDate(QDate::currentDate().addMonths(-1));
-    m_priceFilterSpin->setValue(0);
+    m_dateEndFilterEdit->setDate(QDate::currentDate());
+    m_minPriceFilterSpin->setValue(0);
+    m_maxPriceFilterSpin->setValue(9999.99);
     m_availableFilterCombo->setCurrentIndex(0);
     
-    // 恢复到名称筛选模式
-    m_proxyModel->setFilterKeyColumn(TableItem::NameColumn);
-    m_proxyModel->setFilterFixedString("");
+    // 重置代理模型筛选器
+    m_proxyModel->resetFilters();
     
     statusBar()->showMessage(tr("筛选器已重置"), 3000);
+}
+
+void MainWindow::onApplyFilterClicked()
+{
+    // 应用筛选
+    m_proxyModel->applyFilters();
+    
+    statusBar()->showMessage(tr("筛选器已应用"), 3000);
 }

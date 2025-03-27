@@ -18,6 +18,7 @@ set(SOURCES
     tableitem.cpp
     tablemodel.cpp
     tableitemdelegate.cpp
+    tablefilterproxymodel.cpp
 )
 
 set(HEADERS
@@ -25,6 +26,7 @@ set(HEADERS
     tableitem.h
     tablemodel.h
     tableitemdelegate.h
+    tablefilterproxymodel.h
 )
 
 set(UI_FILES

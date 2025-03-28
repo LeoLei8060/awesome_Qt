@@ -11,11 +11,39 @@ set(CMAKE_AUTOUIC ON)
 # 查找Qt包
 find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
 
+# qtpropertybrowser 源文件
+set(QTPROPERTYBROWSER_SOURCES
+    qtpropertybrowser/qtbuttonpropertybrowser.cpp
+    qtpropertybrowser/qteditorfactory.cpp
+    qtpropertybrowser/qtgroupboxpropertybrowser.cpp
+    qtpropertybrowser/qtpropertybrowser.cpp
+    qtpropertybrowser/qtpropertybrowserutils.cpp
+    qtpropertybrowser/qtpropertymanager.cpp
+    qtpropertybrowser/qttreepropertybrowser.cpp
+    qtpropertybrowser/qtvariantproperty.cpp
+)
+
+set(QTPROPERTYBROWSER_HEADERS
+    qtpropertybrowser/qtbuttonpropertybrowser.h
+    qtpropertybrowser/qteditorfactory.h
+    qtpropertybrowser/qtgroupboxpropertybrowser.h
+    qtpropertybrowser/qtpropertybrowser.h
+    qtpropertybrowser/qtpropertybrowserutils_p.h
+    qtpropertybrowser/qtpropertymanager.h
+    qtpropertybrowser/qttreepropertybrowser.h
+    qtpropertybrowser/qtvariantproperty.h
+)
+
 # 源文件
 set(SOURCES
+    main.cpp
+    mainwindow.cpp
+    ${QTPROPERTYBROWSER_SOURCES}
 )
 
 set(HEADERS
+    mainwindow.h
+    ${QTPROPERTYBROWSER_HEADERS}
 )
 
 set(UI_FILES

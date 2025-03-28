@@ -13,12 +13,18 @@ find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
 
 # 源文件
 set(SOURCES
+    main.cpp
+    mainwidget.cpp
+    customlistwidget.cpp
 )
 
 set(HEADERS
+    mainwidget.h
+    customlistwidget.h
 )
 
 set(UI_FILES
+    mainwidget.ui
 )
 
 # 创建可执行文件

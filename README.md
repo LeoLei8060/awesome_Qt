@@ -16,7 +16,7 @@
 - [x] QCustomPlot曲线控件示例
 - [x] 支持排序和筛选的列表控件示例
 - [x] 支持排序和筛选的表格控件示例
-- [ ] 属性表示例
+- [x] 属性表示例
 - [ ] Dock窗口示例
 - [ ] 自绘列表示例
 
@@ -38,6 +38,9 @@
 
 ### 支持排序和筛选的表格控件示例
 ![表格控件](images/TableView.png)
+
+### 属性表示例
+![属性表示例](images/propertybrowser.png)
 
 ### 自绘列表示例
 ![自绘列表](images/customListView.png)

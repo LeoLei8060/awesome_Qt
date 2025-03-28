@@ -25,3 +25,19 @@
 - Qt 5.15或更高版本
 - CMake 3.16或更高版本
 - 支持C++14或更高版本的编译器
+
+## 项目截图
+
+### QCustomPlot曲线控件示例
+![QCustomPlot曲线控件](images/qcustomplot.png)
+![QCustomPlot曲线控件2](images/qcustomplot2.png)
+
+### 支持排序和筛选的列表控件示例
+![列表控件](images/ListView.png)
+![列表控件2](images/ListView2.png)
+
+### 支持排序和筛选的表格控件示例
+![表格控件](images/TableView.png)
+
+### 自绘列表示例
+![自绘列表](images/customListView.png)
